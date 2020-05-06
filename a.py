@@ -42,8 +42,6 @@ def ValidateParentheses(inputString):
                 return -1
             else:
                 prStack.pop()
-        else:
-            pass
     if len(prStack) != 0:
         return -1
     return 1
@@ -74,7 +72,7 @@ def DeleteRange(start, end, inputList):
 
 
 ## unary operators.
-def UseUnaryOperators(operator, number1, number2=0):
+def UseUnaryOperators(operator, number1, number2=10):
     if operator == "sin":
         return math.sin(number1)
     elif operator == "cos":
@@ -98,20 +96,28 @@ def FindCloseBracketIndex(openBracketIndex, inputList):
             prStack.pop()
             if len(prStack) == 0:
                 return int(i)
-            
+
         i += 1
 
 
-def FindBlockes(inputList):
+def FindBlockes(start, end, inputList):
     result = list()
-    i = 0
-    while i < len(inputList):
-        if inputList[i] == "(":
-            closeBracketIndex = FindCloseBracketIndex(i, inputList)
-            result.append([i, closeBracketIndex])
-            i = closeBracketIndex
-        i += 1
+    while start < end:
+        if inputList[start] == "(":
+            closeBracketIndex = FindCloseBracketIndex(start, inputList)
+            result.append([start, closeBracketIndex])
+            start = closeBracketIndex
+        start += 1
     return result
+
+
+## main recursive calculate finction
+def Calculate(start, end, inputList):
+    print(inputList[start:end])
+    blockIndexes = FindBlockes(start, end, inputarray)
+    if blockIndexes.count != 0:
+        for item in blockIndexes:
+            Calculate(item[0] + 1, item[1], inputList)
 
 
 ## main
@@ -119,11 +125,9 @@ empty = list()
 empty.insert
 inString = input("input:")
 inputarray = ValidateChars(inString.lower())
-if inputarray != -1:
+if inputarray != -1 and ValidateParentheses(inputarray)!=-1:
     JuxtaposeNumbers(inputarray)
-    print(inputarray)
+    Calculate(0, len(inputarray), inputarray)
+    # print(inputarray)
 else:
     print("invalid Char")
-
-print(FindBlockes( inputarray))
-
