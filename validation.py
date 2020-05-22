@@ -75,11 +75,27 @@ def ValidateOrder(inputList):
         ## empty parentheses. ex: "()".
         if inputList[i] == "(" and inputList[i + 1] == ")":
             return -1
-        ## binary or Unary operator without operand. ex: "1++2", "1~+2", "1+!2".
+        ## binary or Unary operator without operand. ex: "1++2", "1~+2", "1+!2", "...!1", "1~...".
         if (
-            inputList[i] in binaryOperator + prefixUnaryOperator
-            and inputList[i + 1] in binaryOperator + pastfixUnaryOperator
+            (
+                inputList[i] in binaryOperator + prefixUnaryOperator
+                and inputList[i + 1] in binaryOperator + pastfixUnaryOperator
+            )
+            or (
+                inputList[i] in pastfixUnaryOperator
+                and type(inputList[i + 1]) in (int, float)
+            )
+            or (
+                type(inputList[i]) in (int, float)
+                and inputList[i + 1] in prefixUnaryOperator
+            )
         ):
+            return -1
+        ## operands without operator or no operator between number and function. ex: "...1pi...", "...e1...", "2sin".
+        if (
+            type(inputList[i]) in (int, float)
+            and type(inputList[i + 1]) in (int, float)
+        ) or (type(inputList[i]) in (int, float) and (inputList[i + 1] in functions)):
             return -1
         i += 1
     return 1
@@ -95,7 +111,6 @@ def JuxtaposeNumbers(inputString):
             inputString[i] = math.e
         j = 0
         while i + j < len(inputString) and inputString[i + j] in numbers:
-            # print(input[i + j])
             j += 1
         if j != 0:
             temp = int("".join(inputString[i : i + j]))
@@ -144,18 +159,18 @@ def FindBlockes(start, end, inputList):
 inString = input("input:")
 inputarray = ValidateChars(inString.lower())
 if inputarray != -1:
-    print("\tchars are valid")
+    print("*\tchars are valid")
     if ValidateParentheses(inputarray) != -1:
-        print("\tparentheses are valid")
+        print("*\tparentheses are valid")
         inputarray = JuxtaposeNumbers(inputarray)
-        print("\tJuxtaposeNumbers: ", inputarray)
+        print("*\tJuxtaposeNumbers: ", inputarray)
         if ValidateOrder(inputarray) != -1:
-            print("\torder is valid")
+            print("*\torder is valid")
             inputarray = FindBlockes(0, len(inputarray), inputarray)
-            print("\tBlockes", inputarray)
+            print("*\tBlockes", inputarray)
         else:
-            print("\torder is not valid")
+            print("*\torder is not valid")
     else:
-        print("\tparentheses are not valid")
+        print("*\tparentheses are not valid")
 else:
-    print("\tchars are not valid")
+    print("*\tchars are not valid")
