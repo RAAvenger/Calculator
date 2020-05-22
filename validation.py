@@ -1,52 +1,52 @@
 import math
 
 validSingleChars = ["e", "+", "-", "*", "/", "(", ")", "^", "!", "%", "~"]
-validMultiChaer = ["pi", "sin", "cos", "log", "sqrt"]
+validMultiChars = ["pi", "sin", "cos", "log", "sqrt"]
 numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-binaryOperator = ["+", "-", "*", "/", "^", "%"]
+binaryOperators = ["+", "-", "*", "/", "^", "%"]
 functions = ["sin", "cos", "log", "sqrt"]
-prefixUnaryOperator = ["~"]
-pastfixUnaryOperator = ["!"]
+prefixUnaryOperators = ["~"]
+pastfixUnaryOperators = ["!"]
 
 ## check input Chars and convert string to list.
-def ValidateChars(input):
-    ts = list()
+def ValidateChars(inputString):
+    equationList = list()
     i = 0
-    while i < len(input):
-        if input[i] in validSingleChars:
-            ts.append(input[i])
-        elif input[i] in ["s", "c", "l", "p"]:
-            if input[i : i + 2] in validMultiChaer:
-                ts.append(input[i : i + 2])
+    while i < len(inputString):
+        if inputString[i] in validSingleChars:
+            equationList.append(inputString[i])
+        elif inputString[i] in ["s", "c", "l", "p"]:
+            if inputString[i : i + 2] in validMultiChars:
+                equationList.append(inputString[i : i + 2])
                 i += 1
-            elif input[i : i + 3] in validMultiChaer:
-                ts.append(input[i : i + 3])
+            elif inputString[i : i + 3] in validMultiChars:
+                equationList.append(inputString[i : i + 3])
                 i += 2
-            elif input[i : i + 4] in validMultiChaer:
-                ts.append(input[i : i + 4])
+            elif inputString[i : i + 4] in validMultiChars:
+                equationList.append(inputString[i : i + 4])
                 i += 3
             else:
                 return -1
-        elif input[i] in numbers:
-            ts.append(input[i])
+        elif inputString[i] in numbers:
+            equationList.append(inputString[i])
         else:
             return -1
         i += 1
-    return ts
+    return equationList
 
 
 ## check Parentheses.
 def ValidateParentheses(inputString):
-    prStack = list()
+    parenthesesStack = list()
     for item in inputString:
         if item == "(":
-            prStack.append("(")
+            parenthesesStack.append("(")
         elif item == ")":
-            if len(prStack) == 0:
+            if len(parenthesesStack) == 0:
                 return -1
             else:
-                prStack.pop()
-    if len(prStack) != 0:
+                parenthesesStack.pop()
+    if len(parenthesesStack) != 0:
         return -1
     return 1
 
@@ -56,8 +56,8 @@ def ValidateOrder(inputList):
     i = 0
     ## ""binary or pastfix Unary" Operators" at start or "function or "prefix Unary or binary" operators" at end of list. ex: "+...", "!...", "...+", "...sin"
     if (
-        inputList[0] in binaryOperator + pastfixUnaryOperator
-        or inputList[-1] in functions + prefixUnaryOperator + binaryOperator
+        inputList[0] in binaryOperators + pastfixUnaryOperators
+        or inputList[-1] in functions + prefixUnaryOperators + binaryOperators
     ):
         return -1
     while i <= len(inputList) - 2:
@@ -66,10 +66,10 @@ def ValidateOrder(inputList):
             return -1
         ## "number or pastfix Unary Operators" befor "open parenthes" or "number or function or prefix Unary operators" after "close parenthes". ex: "2(", ")2", ")sin".
         if (
-            inputList[i] in numbers + pastfixUnaryOperator and inputList[i + 1] == "("
+            inputList[i] in numbers + pastfixUnaryOperators and inputList[i + 1] == "("
         ) or (
             inputList[i] == ")"
-            and (inputList[i + 1] in numbers + functions + prefixUnaryOperator)
+            and (inputList[i + 1] in numbers + functions + prefixUnaryOperators)
         ):
             return -1
         ## empty parentheses. ex: "()".
@@ -78,16 +78,16 @@ def ValidateOrder(inputList):
         ## binary or Unary operator without operand. ex: "1++2", "1~+2", "1+!2", "...!1", "1~...".
         if (
             (
-                inputList[i] in binaryOperator + prefixUnaryOperator
-                and inputList[i + 1] in binaryOperator + pastfixUnaryOperator
+                inputList[i] in binaryOperators + prefixUnaryOperators
+                and inputList[i + 1] in binaryOperators + pastfixUnaryOperators
             )
             or (
-                inputList[i] in pastfixUnaryOperator
+                inputList[i] in pastfixUnaryOperators
                 and type(inputList[i + 1]) in (int, float)
             )
             or (
                 type(inputList[i]) in (int, float)
-                and inputList[i + 1] in prefixUnaryOperator
+                and inputList[i + 1] in prefixUnaryOperators
             )
         ):
             return -1
@@ -155,22 +155,27 @@ def FindBlockes(start, end, inputList):
     return result
 
 
-## test main
-inString = input("input:")
-inputarray = ValidateChars(inString.lower())
-if inputarray != -1:
-    print("*\tchars are valid")
-    if ValidateParentheses(inputarray) != -1:
-        print("*\tparentheses are valid")
-        inputarray = JuxtaposeNumbers(inputarray)
-        print("*\tJuxtaposeNumbers: ", inputarray)
-        if ValidateOrder(inputarray) != -1:
-            print("*\torder is valid")
-            inputarray = FindBlockes(0, len(inputarray), inputarray)
-            print("*\tBlockes", inputarray)
+def FullValidate(inputString):
+    equationList = ValidateChars(inputString.lower())
+    if equationList != -1:
+        if ValidateParentheses(equationList) != -1:
+            equationList = JuxtaposeNumbers(equationList)
+            if ValidateOrder(equationList) != -1:
+                return (1, equationList)
+            else:
+                return (-1, "order is not valid")
         else:
-            print("*\torder is not valid")
+            return (-1, "parentheses are not valid")
     else:
-        print("*\tparentheses are not valid")
+        return (-1, "chars are not valid")
+
+
+## test main
+inputString = input("input:")
+result = FullValidate(inputString)
+if result[0] != -1:
+    equation = result[1]
+    print(equation)
 else:
-    print("*\tchars are not valid")
+    ErroR = result[1]
+    print(ErroR)
