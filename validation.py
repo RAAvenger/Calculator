@@ -1,8 +1,14 @@
-validSingleChars = ("e", "+", "-", "*", "/", "(", ")", "|", "^", "!", "%", "~")
-validMultiChaer = ("pi", "sin", "cos", "log", "sqrt")
-numbers = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+import math
 
-## check input Chars.
+validSingleChars = ["e", "+", "-", "*", "/", "(", ")", "^", "!", "%", "~"]
+validMultiChaer = ["pi", "sin", "cos", "log", "sqrt"]
+numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+binaryOperator = ["+", "-", "*", "/", "^", "%"]
+functions = ["sin", "cos", "log", "sqrt"]
+prefixUnaryOperator = ["~"]
+pastfixUnaryOperator = ["!"]
+
+## check input Chars and convert string to list.
 def ValidateChars(input):
     ts = list()
     i = 0
@@ -48,23 +54,35 @@ def ValidateParentheses(inputString):
 ## check char order.
 def ValidateOrder(inputList):
     i = 0
-    ## "binary" operators at start or "unary or binary" operators at end of list. ex: "+...", "...+", "...sin"
-    if (inputList[0] != "~" and inputList[0] in validSingleChars) or (
-        inputList[-1] in validSingleChars + validMultiChaer
+    ## ""binary or pastfix Unary" Operators" at start or "function or "prefix Unary or binary" operators" at end of list. ex: "+...", "!...", "...+", "...sin"
+    if (
+        inputList[0] in binaryOperator + pastfixUnaryOperator
+        or inputList[-1] in functions + prefixUnaryOperator + binaryOperator
     ):
         return -1
-    while i < len(inputList) - 1:
+    while i <= len(inputList) - 2:
         ## a function without parenthes after it. ex: "sin12".
-        if inputList[i] in validMultiChaer and inputList[i + 1] != "(":
+        if inputList[i] in functions and inputList[i + 1] != "(":
             return -1
-        ## "number" befor "open parenthes" or "number or unary operator" after "close parenthes". ex: "2(", ")2", ")sin".
+        ## "number or pastfix Unary Operators" befor "open parenthes" or "number or function or prefix Unary operators" after "close parenthes". ex: "2(", ")2", ")sin".
         if (
-            inputList[i] == ")" and (inputList[i + 1] in numbers + validMultiChaer)
-        ) or (inputList[i] in numbers and inputList[i + 1] == "("):
+            inputList[i] in numbers + pastfixUnaryOperator and inputList[i + 1] == "("
+        ) or (
+            inputList[i] == ")"
+            and (inputList[i + 1] in numbers + functions + prefixUnaryOperator)
+        ):
             return -1
         ## empty parentheses. ex: "()".
         if inputList[i] == "(" and inputList[i + 1] == ")":
             return -1
+        ## binary or Unary operator without operand. ex: "1++2", "1~+2", "1+!2".
+        if (
+            inputList[i] in binaryOperator + prefixUnaryOperator
+            and inputList[i + 1] in binaryOperator + pastfixUnaryOperator
+        ):
+            return -1
+        i += 1
+    return 1
 
 
 ## juxtapose numbers(convert string numbers to int).
@@ -120,3 +138,24 @@ def FindBlockes(start, end, inputList):
             start = closeBracketIndex
         start += 1
     return result
+
+
+## test main
+inString = input("input:")
+inputarray = ValidateChars(inString.lower())
+if inputarray != -1:
+    print("\tchars are valid")
+    if ValidateParentheses(inputarray) != -1:
+        print("\tparentheses are valid")
+        inputarray = JuxtaposeNumbers(inputarray)
+        print("\tJuxtaposeNumbers: ", inputarray)
+        if ValidateOrder(inputarray) != -1:
+            print("\torder is valid")
+            inputarray = FindBlockes(0, len(inputarray), inputarray)
+            print("\tBlockes", inputarray)
+        else:
+            print("\torder is not valid")
+    else:
+        print("\tparentheses are not valid")
+else:
+    print("\tchars are not valid")
