@@ -8,8 +8,10 @@ functions = ["sin", "cos", "log", "sqrt"]
 prefixUnaryOperators = ["~"]
 pastfixUnaryOperators = ["!"]
 
-## check input Chars and convert string to list.
 def ValidateChars(inputString):
+    """
+    check input Chars and convert string to list.
+    """
     equationList = list()
     i = 0
     while i < len(inputString):
@@ -35,8 +37,10 @@ def ValidateChars(inputString):
     return equationList
 
 
-## check Parentheses.
 def ValidateParentheses(inputString):
+    """
+    check Parentheses.
+    """
     parenthesesStack = list()
     for item in inputString:
         if item == "(":
@@ -51,8 +55,10 @@ def ValidateParentheses(inputString):
     return 1
 
 
-## check char order.
 def ValidateOrder(inputList):
+    """
+    check char order.
+    """
     i = 0
     ## ""binary or pastfix Unary" Operators" at start or "function or "prefix Unary or binary" operators" at end of list. ex: "+...", "!...", "...+", "...sin"
     if (
@@ -101,8 +107,10 @@ def ValidateOrder(inputList):
     return 1
 
 
-## juxtapose numbers(convert string numbers to int).
 def JuxtaposeNumbers(inputString):
+    """
+    juxtapose numbers(convert string numbers to int).
+    """
     i = 0
     while i < len(inputString):
         if inputString[i] == "pi":
@@ -120,16 +128,20 @@ def JuxtaposeNumbers(inputString):
     return inputString
 
 
-## del range of indexes.
 def DeleteRange(start, end, inputList):
+    """
+    delete range of indexes.
+    """
     c = start
     while c < end:
         del inputList[start]
         c += 1
 
 
-## find index of close Bracket of given open bracket's index.
 def FindCloseBracketIndex(openBracketIndex, inputList):
+    """
+    find index of close Bracket of given open bracket's index.
+    """
     prStack = list()
     i = openBracketIndex
     while i < len(inputList):
@@ -143,8 +155,10 @@ def FindCloseBracketIndex(openBracketIndex, inputList):
         i += 1
 
 
-## get start, end and list then return list of start and end indexes of all blockes.
 def FindBlockes(start, end, inputList):
+    """
+    get start, end and list then return list of start and end indexes of all blockes.
+    """
     result = list()
     while start < end:
         if inputList[start] == "(":
@@ -156,6 +170,9 @@ def FindBlockes(start, end, inputList):
 
 
 def FullValidate(inputString):
+    """
+    fully validate given input string and create a list of operands and operatirs.
+    """
     equationList = ValidateChars(inputString.lower())
     if equationList != -1:
         if ValidateParentheses(equationList) != -1:
@@ -168,14 +185,3 @@ def FullValidate(inputString):
             return (-1, "parentheses are not valid")
     else:
         return (-1, "chars are not valid")
-
-
-## test main
-inputString = input("input:")
-result = FullValidate(inputString)
-if result[0] != -1:
-    equation = result[1]
-    print(equation)
-else:
-    ErroR = result[1]
-    print(ErroR)
