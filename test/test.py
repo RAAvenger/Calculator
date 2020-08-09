@@ -32,17 +32,16 @@ for i in range(len(inString)):
     inputTerm, error = Calculator.validation.FullValidate(inString[i])
     if not error:
         result = Expression(inputTerm)
-        # stringRes = str(result).replace("'", "")
-        # stringRes = str(stringRes).replace(" ", "")
-        # stringRes = str(stringRes).replace('"', "")
-        # stringRes = str(stringRes).replace(",", "")
+        stringRes = str(result).replace("'", "")
+        stringRes = str(stringRes).replace(" ", "")
+        stringRes = str(stringRes).replace('"', "")
+        stringRes = str(stringRes).replace(",", "")
+        print(stringRes)
         # if stringRes == resultString[i]:
-        #     print(result)
         #     print("correct")
         # else:
-        #     print(stringRes)
+        #     print("not match:")
         #     print(resultString[i])
-        #     print("not match")
         # print("____________________________________________________________")
     else:
         print(error)

@@ -1,10 +1,9 @@
+import math
 import os, sys, inspect
-
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
-
-from Calculator.validation import FindCloseBracketIndex, FindBlockes
+from Calculator.validation import FindCloseBracketIndex, FindBlockes, DeleteRange
 
 
 class Expression:
@@ -18,14 +17,14 @@ class Expression:
 
     def __init__(self, term):
         # term keeps operands and operators with same priority.
-        self.term = []
+        self.input = []
         error = self.SetTerm(term)
         if error:
             print(error)
 
     def __str__(self):
         result = []
-        for item in self.term:
+        for item in self.input:
             result.append(item.__str__())
         return str(result).replace("\\", "")
 
@@ -33,6 +32,9 @@ class Expression:
         """
         Use unary operators on operand(s) and calculate result.
         """
+        if type(operand1) == Expression:
+            ## get expression result.
+            operand1 = 10
         if operator == "sin":
             return math.sin(operand1)
         elif operator == "cos":
@@ -72,82 +74,43 @@ class Expression:
 
     def SetTerm(self, term):
         """
-        get term list and if it has operators with different priority create Expressions for higher priority terms. 
+        create a Prefix expression from term( an infix expression ).
         """
         if not term:
             return "empty input"
+        ## find blockes and create a new Expression for each one of them.
         t = FindBlockes(0, len(term), term)
+        for blockRange in reversed(t):
+            if blockRange[1] - blockRange[0] != 2:
+                blockExpression = Expression(term[blockRange[0] + 1 : blockRange[1]])
+                DeleteRange(blockRange[0] + 1, blockRange[1], term)
+                term.insert(blockRange[0], blockExpression)
+        term = self.RemoveAll(term, ")", "(")
+        for i in reversed(range(len(term))):
+            if term[i] in self.pastfixUnaryOperators:
+                term[i - 1] = self.UseUnaryOperators(term[i], term[i - 1])
+                term.pop(i)
+            elif term[i] in self.prefixUnaryOperators + self.functions:
+                term[i] = self.UseUnaryOperators(term[i], term[i + 1])
+                term.pop(i + 1)
+        pass
 
-        # thisPriority = 0
-        # newPriority = 0
-        # i = 0
-        # ## Index = -1 means "not set".
-        # pIndex = -1
-        # startIndex = -1
-        # while i < len(term):
-        #     if term[i] in ["("] and i + 2 < len(term) and term[i + 2] != ")":
-        #         ## handle Parentheses.
-        #         closeBracketIndex = FindCloseBracketIndex(i, term)
-        #         self.term.append(Expression(term[i + 1 : closeBracketIndex]))
-        #         i = closeBracketIndex + 1
-        #         continue
-        #     if type(term[i]) in [int, float, type(Expression)]:
-        #         pass
-        #     elif term[i] in self.priority1BinaryOperators:
-        #         newPriority = 1
-        #     elif term[i] in self.priority2BinaryOperators:
-        #         newPriority = 2
-        #     elif term[i] in self.priority3BinaryOperators:
-        #         newPriority = 3
-        #     elif term[i] in self.priority4BinaryOperators:
-        #         newPriority = 4
-        #     if startIndex == -1:
-        #         ## A "thisPriority < newPriority" condition not apend.
-        #         if thisPriority == 0:
-        #             ## initial mode.
-        #             thisPriority = newPriority
-        #             self.term.append(term[i])
-        #         elif thisPriority < newPriority:
-        #             ## start of a higher priority term.
-        #             if type(term[i - 1]) == int:
-        #                 ## ex: "...num*num..." or "...num^num..." or ... .
-        #                 startIndex = i - 1
-        #                 self.term.pop()
-        #             else:
-        #                 ## ex: "...num+(num..." or "...num/(num..." or ... .
-        #                 startIndex = i
-        #         elif thisPriority > newPriority:
-        #             ## new priority is lower then befor so we create a Expression for start of term until here.
-        #             if thisPriority != 5:
-        #                 newTerm = Expression(self.term)
-        #                 self.term.clear()
-        #                 self.term.append(newTerm)
-        #             self.term.append(term[i])
-        #             thisPriority = newPriority
-        #         else:
-        #             ## term[i] is a number or unary Operator or function
-        #             self.term.append(term[i])
-        #     else:
-        #         ## A "thisPriority < newPriority" condition apend befor and we are counting a "higher priority term" length.
-        #         if i == len(term) - 1:
-        #             newTerm = Expression(term[startIndex : i + 1])
-        #             self.term.append(newTerm)
-        #         elif thisPriority == newPriority:
-        #             ## end of higher priority, back to previous priority.
-        #             ## so we create a Expression for high priority term.
-        #             self.term.append(Expression(term[startIndex:i]))
-        #             self.term.append(term[i])
-        #             startIndex = -1
-        #         elif thisPriority > newPriority:
-        #             ## end of higher priority, goiing to lower priority then previous priority.
-        #             ## so we create a Expression for high priority term and other one for start of term until here.
-        #             newTerm = Expression(term[startIndex:i])
-        #             self.term.append(newTerm)
-        #             newTerm = Expression(self.term)
-        #             self.term.clear()
-        #             self.term.append(newTerm)
-        #             self.term.append(term[i])
-        #             thisPriority = newPriority
-        #             startIndex = -1
-        #     i += 1
-        # self.term = self.RemoveAll(self.term, ")", "(")
+    def FindPriority(self, input):
+        """
+        get operand or operator and return its priority.
+        """
+        if (
+            type(input) in [int, float]
+            or input
+            in self.functions + self.pastfixUnaryOperators + self.prefixUnaryOperators
+        ):
+            return 5
+        elif term in self.priority4BinaryOperators:
+            return 4
+        elif term in self.priority3BinaryOperators:
+            return 3
+        elif term in self.priority2BinaryOperators:
+            return 2
+        elif input in self.priority1BinaryOperators:
+            return 1
+

@@ -131,7 +131,7 @@ def JuxtaposeNumbers(inputString):
 
 def DeleteRange(start, end, inputList):
     """
-    delete range of indexes.
+    delete range of indexes from refrenced inputList.
     """
     c = start
     while c < end:
