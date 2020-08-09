@@ -8,6 +8,7 @@ functions = ["sin", "cos", "log", "sqrt"]
 prefixUnaryOperators = ["~"]
 pastfixUnaryOperators = ["!"]
 
+
 def ValidateChars(inputString):
     """
     check input Chars and convert string to list.
@@ -178,10 +179,10 @@ def FullValidate(inputString):
         if ValidateParentheses(equationList) != -1:
             equationList = JuxtaposeNumbers(equationList)
             if ValidateOrder(equationList) != -1:
-                return (1, equationList)
+                return equationList, None
             else:
-                return (-1, "order is not valid")
+                return [], "order is not valid"
         else:
-            return (-1, "parentheses are not valid")
+            return [], "parentheses are not valid"
     else:
-        return (-1, "chars are not valid")
+        return [], "chars are not valid"
