@@ -1,5 +1,6 @@
 import math
 import os, sys, inspect
+
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
@@ -18,6 +19,7 @@ class Expression:
     def __init__(self, term):
         # term keeps operands and operators with same priority.
         self.input = []
+        self.stack = []
         error = self.SetTerm(term)
         if error:
             print(error)
@@ -34,7 +36,7 @@ class Expression:
         """
         if type(operand1) == Expression:
             ## get expression result.
-            operand1 = 10
+            operand1 = operand1.CalculateResult()
         if operator == "sin":
             return math.sin(operand1)
         elif operator == "cos":
@@ -45,6 +47,8 @@ class Expression:
             return math.sqrt(operand1)
         elif operator == "~":
             return operand1 * -1
+        elif operator == "!":
+            return math.factorial(operand1)
 
     def UseBinaryOperators(self, operator, number1, number2=10):
         """
@@ -53,11 +57,11 @@ class Expression:
         if operator == "+":
             return number1 + number2
         if operator == "-":
-            return number1 + number2
+            return number1 - number2
         if operator == "*":
-            return number1 + number2
+            return number1 * number2
         if operator == "/":
-            return number1 + number2
+            return number1 / number2
         if operator == "%":
             return number1 % number2
         if operator == "^":
@@ -79,13 +83,15 @@ class Expression:
         if not term:
             return "empty input"
         ## find blockes and create a new Expression for each one of them.
-        t = FindBlockes(0, len(term), term)
-        for blockRange in reversed(t):
+        blockes = FindBlockes(0, len(term), term)
+        for blockRange in reversed(blockes):
             if blockRange[1] - blockRange[0] != 2:
                 blockExpression = Expression(term[blockRange[0] + 1 : blockRange[1]])
                 DeleteRange(blockRange[0] + 1, blockRange[1], term)
                 term.insert(blockRange[0], blockExpression)
         term = self.RemoveAll(term, ")", "(")
+        self.input = term
+        ## calculate and get result of all Unary Operations in expression.
         for i in reversed(range(len(term))):
             if term[i] in self.pastfixUnaryOperators:
                 term[i - 1] = self.UseUnaryOperators(term[i], term[i - 1])
@@ -93,24 +99,68 @@ class Expression:
             elif term[i] in self.prefixUnaryOperators + self.functions:
                 term[i] = self.UseUnaryOperators(term[i], term[i + 1])
                 term.pop(i + 1)
-        pass
+        ## create Prefix expression.
+        priorities = []
+        for item in term:
+            priorities.append(self.FindPriority(item))
+        expressionStack = []
+        i = 0
+        j = -1
+        while i < len(term):
+            if i == 0:
+                expressionStack.append(term[i])
+            elif priorities[i] < priorities[j]:
+                tempStack = []
+                while priorities[i] < priorities[j] and j >= 0:
+                    tempStack.append(expressionStack.pop())
+                    j -= 1
+                expressionStack.append(term[i])
+                for item in reversed(tempStack):
+                    expressionStack.append(item)
+            else:
+                expressionStack.append(term[i])
+            i += 1
+            j = i - 1
+        self.stack = expressionStack
 
-    def FindPriority(self, input):
+    def CalculateResult(self):
+        """
+        calculate expression result using preorder expression in stack.
+        """
+        expressionStack = self.stack.copy()
+        for i in reversed(range(len(expressionStack))):
+            if (
+                expressionStack[i]
+                in self.priority1BinaryOperators
+                + self.priority2BinaryOperators
+                + self.priority3BinaryOperators
+                + self.priority4BinaryOperators
+            ):
+                expressionStack[i] = self.UseBinaryOperators(
+                    expressionStack[i], expressionStack[i + 1], expressionStack[i + 2]
+                )
+                expressionStack.pop(i + 2)
+                expressionStack.pop(i + 1)
+            elif type(expressionStack[i]) == Expression:
+                expressionStack[i] = expressionStack[i].CalculateResult()
+        return expressionStack[0]
+
+    def FindPriority(self, theInput):
         """
         get operand or operator and return its priority.
         """
         if (
-            type(input) in [int, float]
-            or input
+            type(theInput) in [int, float, Expression]
+            or theInput
             in self.functions + self.pastfixUnaryOperators + self.prefixUnaryOperators
         ):
             return 5
-        elif term in self.priority4BinaryOperators:
+        elif theInput in self.priority4BinaryOperators:
             return 4
-        elif term in self.priority3BinaryOperators:
+        elif theInput in self.priority3BinaryOperators:
             return 3
-        elif term in self.priority2BinaryOperators:
+        elif theInput in self.priority2BinaryOperators:
             return 2
-        elif input in self.priority1BinaryOperators:
+        elif theInput in self.priority1BinaryOperators:
             return 1
 

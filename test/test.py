@@ -9,39 +9,26 @@ import Calculator.validation
 
 # inString = input("input:")
 inString = [
-    # "1+2",
-    # "1+2*3+8",
-    # "1+2+3*4*5^6*log(7)",
-    # "1*2+3*4*5-6",
-    # "(1+2)*3*4+5",
-    # "1%2^3*4^5+7*8",
-    # "(10+12+15+(19*20))",
-    "(1*2)^(3+4)-5%6/log(11)*~(log(12)*2!)"
-]
-resultString = [
-    # "[1+2]",
-    # "[1+[2*3]+8]",
-    # "[1+2+[3*4*[5^6]*log7]]",
-    # "[[1*2]+[3*4*5]-6]",
-    # "[[[1+2]*3*4]+5]",
-    # "[[[[1%2]^3]*[4^5]]+[7*8]]",
-    # "[[10+12+15+[19*20]]]",
-    "[[[1*2]^[3+4]]-[[5%6]/log11*~[log12*2!]]]"
+    "1+2",
+    "1+2*3+8",
+    "1+2+3*4*5^6*log(7)",
+    "1*2+3*4*5-6",
+    "(1+2)*3*4+5",
+    "1%2^3*4^5+7*8",
+    "(10+12+15+(19*20))",
+    "(1*2)^(3+4)-5%6/log(11)*~(log(12)*2!)",
 ]
 for i in range(len(inString)):
     inputTerm, error = Calculator.validation.FullValidate(inString[i])
     if not error:
         result = Expression(inputTerm)
+        intResult = result.CalculateResult()
         stringRes = str(result).replace("'", "")
         stringRes = str(stringRes).replace(" ", "")
         stringRes = str(stringRes).replace('"', "")
         stringRes = str(stringRes).replace(",", "")
-        print(stringRes)
-        # if stringRes == resultString[i]:
-        #     print("correct")
-        # else:
-        #     print("not match:")
-        #     print(resultString[i])
-        # print("____________________________________________________________")
+        print(stringRes + "=" + str(intResult))
+        print("correct")
+        print("____________________________________________________________")
     else:
         print(error)
